@@ -3,21 +3,21 @@
 # Pour ajouter une légende : Jour3: photo.jpg | Ma légende
 # Les lignes qui commencent par # sont ignorées.
 
-Jour1: 
-Jour2: 
-Jour3: 
-Jour4: 
-Jour5: 
-Jour6: 
-Jour7: 
-Jour8: 
-Jour9: 
-Jour10: 
-Jour11: 
-Jour12: 
-Jour13: 
-Jour14: 
-Jour15: 
+Jour1: https://www.youtube.com/watch?v=Tuf61OjvoPQ
+Jour2: écureuilchampignon.jpg
+Jour3: https://www.youtube.com/watch?v=lo6x4eulY9g
+Jour4: sablé1.jpg
+Jour5: https://www.youtube.com/watch?v=0NxfhtKxn60&list=RD0NxfhtKxn60&start_radio=1
+Jour6: https://www.youtube.com/watch?v=Q4FYNF02yEM
+Jour7: animauxfeu.jpg 
+Jour8: sapin feuilleté.jpg
+Jour9: https://www.youtube.com/watch?v=Dzz6lUsF19g
+Jour10: painepice.jpg
+Jour11: https://www.youtube.com/watch?v=2BduV7k5W-o
+Jour12: samedichat.jpg
+Jour13: https://youtu.be/QOjge0y0s1U
+Jour14: rennebonhomme.jpg
+Jour15: pain épice
 Jour16: 
 Jour17: 
 Jour18: 
