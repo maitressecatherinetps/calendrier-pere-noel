@@ -1,0 +1,29 @@
+# Une ligne par jour, au format :  JourN: nom-du-fichier  ou  JourN: lien YouTube
+# Photos et vidéos : nom du fichier exactement comme dans GitHub (majuscules et extension comprises).
+# Pour ajouter une légende : Jour3: photo.jpg | Ma légende
+# Les lignes qui commencent par # sont ignorées.
+
+Jour1: 
+Jour2: 
+Jour3: 
+Jour4: 
+Jour5: 
+Jour6: 
+Jour7: 
+Jour8: 
+Jour9: 
+Jour10: 
+Jour11: 
+Jour12: 
+Jour13: 
+Jour14: 
+Jour15: 
+Jour16: 
+Jour17: 
+Jour18: 
+Jour19: 
+Jour20: 
+Jour21: 
+Jour22: 
+Jour23: 
+Jour24: 

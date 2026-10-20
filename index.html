@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Le calendrier de Maîtresse Catherine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;700&family=Mountains+of+Christmas:wght@700&display=swap" rel="stylesheet">
+<style>
+:root{--creme:#f8eed8;--vert:#2f7d3c;--rouge:#c8312f;--or:#d9a441;--brun:#4a2f1f}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:'Fredoka',system-ui,sans-serif;color:var(--brun);background:var(--creme);min-height:100vh}
+body::before{content:"";position:fixed;inset:0;background:url(fond.jpg) center/cover no-repeat;z-index:-1}
+main{max-width:780px;margin:0 auto;padding:20px 12px 70px}
+.carte{background:rgba(255,249,232,.88);border:3px solid var(--or);border-radius:24px;padding:18px 14px 24px;box-shadow:0 6px 24px rgba(74,47,31,.25)}
+h1{font-family:'Mountains of Christmas',Georgia,serif;font-size:clamp(1.9rem,6.2vw,3.1rem);line-height:1.1;color:var(--rouge);text-align:center;margin:4px 0 8px}
+.sous{text-align:center;margin:0 0 18px;font-size:1.05rem}
+.grille{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media(min-width:560px){.grille{grid-template-columns:repeat(4,1fr);gap:14px}}
+@media(min-width:760px){.grille{grid-template-columns:repeat(6,1fr)}}
+.case{appearance:none;border:0;background:none;padding:0;cursor:pointer;aspect-ratio:1;-webkit-tap-highlight-color:transparent;position:relative}
+.case svg{width:100%;height:100%;display:block;overflow:visible}
+.case:focus-visible{outline:3px solid var(--vert);outline-offset:3px;border-radius:12px}
+.case .cadenas{display:none}
+.case.ferme{filter:saturate(.75) brightness(.95);cursor:default}
+.case.ferme .cadenas{display:block}
+.case.aujourdhui{animation:pulse 1.6s ease-in-out infinite}
+.case.secoue{animation:secoue .4s}
+.couvercle{transition:transform .35s ease;transform-box:fill-box;transform-origin:center}
+.case.ouvert .couvercle{transform:translate(12px,-16px) rotate(14deg)}
+@keyframes pulse{50%{transform:scale(1.07)}}
+@keyframes secoue{25%{transform:rotate(-7deg)}75%{transform:rotate(7deg)}}
+@media(prefers-reduced-motion:reduce){.case.aujourdhui,.case.secoue{animation:none}.couvercle{transition:none}}
+#info{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--brun);color:#fff;padding:12px 18px;border-radius:999px;max-width:90vw;text-align:center;z-index:20;opacity:0;pointer-events:none;transition:opacity .25s}
+#info.visible{opacity:1}
+dialog{border:4px solid var(--or);border-radius:22px;background:var(--creme);color:var(--brun);padding:16px;width:min(92vw,640px);max-height:92vh;font-family:inherit}
+dialog::backdrop{background:rgba(40,20,10,.65)}
+dialog h2{font-family:'Mountains of Christmas',Georgia,serif;color:var(--rouge);font-size:2rem;margin:0 0 10px;text-align:center}
+dialog img,dialog video{display:block;max-width:100%;max-height:62vh;margin:0 auto;border-radius:12px;object-fit:contain}
+.video16{position:relative;width:100%;aspect-ratio:16/9}
+.video16 iframe{position:absolute;inset:0;width:100%;height:100%;border:0;border-radius:12px}
+.legende{text-align:center;font-size:1.1rem;margin:12px 0 0}
+.manque{text-align:center;padding:24px 8px}
+.btn{font:inherit;font-weight:700;color:#fff;background:var(--vert);border:0;border-radius:999px;padding:10px 22px;cursor:pointer;margin-top:14px}
+.btn.clair{background:#fff;color:var(--brun);border:2px solid var(--or)}
+.centre{text-align:center}
+#fmdp input{font:inherit;font-size:1.2rem;padding:8px 12px;border:2px solid var(--or);border-radius:10px;width:100%;text-align:center}
+#bandeau{background:var(--vert);color:#fff;text-align:center;padding:8px 12px;font-size:.95rem}
+#bandeau button{font:inherit;margin-left:10px;border:0;border-radius:999px;padding:4px 12px;cursor:pointer}
+#secret{position:fixed;right:6px;bottom:6px;width:44px;height:44px;border:0;background:none;color:var(--brun);font-size:24px;opacity:.3;cursor:pointer}
+</style>
+</head>
+<body>
+<div id="bandeau" hidden><span id="bandeauTxt">Mode test : toutes les cases sont ouvertes.</span> <button type="button" id="quitterTest">Quitter le mode test</button></div>
+<main>
+  <div class="carte">
+    <h1>Le calendrier de Maîtresse Catherine pour attendre le Père Noël</h1>
+    <p class="sous">Une case s’ouvre chaque jour, du 1er au 24 décembre.</p>
+    <div class="grille" id="grille"></div>
+  </div>
+</main>
+
+<div id="info" role="status"></div>
+
+<dialog id="vue" aria-labelledby="vueTitre">
+  <h2 id="vueTitre"></h2>
+  <div id="vueMedia"></div>
+  <p class="legende" id="vueTexte"></p>
+  <div class="centre"><button type="button" class="btn" id="fermer">Fermer</button></div>
+</dialog>
+
+<dialog id="mdp">
+  <form id="fmdp" autocomplete="off">
+    <h2>Mode test</h2>
+    <input id="mdpChamp" type="password" inputmode="numeric" placeholder="Mot de passe" aria-label="Mot de passe">
+    <p id="mdpErr" class="centre" hidden>Mot de passe incorrect.</p>
+    <div class="centre"><button type="submit" class="btn">Valider</button> <button type="button" class="btn clair" id="mdpAnnuler">Annuler</button></div>
+  </form>
+</dialog>
+
+<button type="button" id="secret" aria-label="Mode test">✦</button>
+
+<script>
+/* ====== RÉGLAGES ====== */
+const ANNEE = 2026, MOIS = 11;            // décembre 2026 (les mois commencent à 0)
+const MDP_TEST = "MTMwMw==";              // mot de passe du mode test, encodé
+
+/* ====== CONTENU DE CHAQUE JOUR ======
+   Tout est lu dans le fichier cadeau.txt (à côté de cette page), une ligne par jour :
+     Jour1: mavideo.mp4
+     Jour2: https://youtu.be/XXXXXXXXXXX
+     Jour3: photo.jpg | Légende facultative après la barre verticale */
+const CONTENUS = {};
+let erreurTxt = "";
+function lireListe(txt) {
+  txt.replace(/^\uFEFF/, "").split(/\r?\n/).forEach(ligne => {
+    const m = ligne.match(/^\s*jour\s*(\d{1,2})\s*[:：]?\s*(.+?)\s*$/i);
+    if (!m) return;
+    const j = +m[1];
+    const [fichier, ...reste] = m[2].split("|");
+    if (j < 1 || j > 24 || /^[\s:：]*$/.test(fichier)) return;
+    CONTENUS[j] = { fichier: fichier.trim(), texte: reste.join("|").trim() };
+  });
+}
+const pret = fetch("cadeau.txt", { cache: "no-store" })
+  .then(r => { if (!r.ok) throw new Error(r.status); return r.text(); })
+  .then(lireListe)
+  .catch(() => { erreurTxt = "cadeau.txt introuvable (ouvre la page depuis GitHub Pages et vérifie que le fichier est à côté de index.html)."; });
+
+/* ====== MÉMOIRE (appareil) ====== */
+const CLE = "avent2026-ouverts";
+const lire = () => { try { return JSON.parse(localStorage.getItem(CLE)) || []; } catch (e) { return []; } };
+const ecrire = l => { try { localStorage.setItem(CLE, JSON.stringify(l)); } catch (e) {} };
+let test = false;
+try { test = sessionStorage.getItem("avent2026-test") === "1"; } catch (e) {}
+
+/* ====== OUTILS ====== */
+const $ = id => document.getElementById(id);
+const disponible = j => test || new Date() >= new Date(ANNEE, MOIS, j);
+const estAujourdhui = j => { const n = new Date(); return n.getFullYear() === ANNEE && n.getMonth() === MOIS && n.getDate() === j; };
+const jourTexte = j => (j === 1 ? "1er" : String(j)) + " décembre";
+
+let timer;
+function info(msg) {
+  const el = $("info");
+  el.textContent = msg;
+  el.classList.add("visible");
+  clearTimeout(timer);
+  timer = setTimeout(() => el.classList.remove("visible"), 3000);
+}
+
+function cadeau(j) {
+  const rouge = j % 2 === 1;
+  const c = rouge ? { corps: "#c8312f", haut: "#a52421", ruban: "#f3c95b" }
+                  : { corps: "#2f7d3c", haut: "#23602d", ruban: "#d6453d" };
+  return `<svg viewBox="0 0 100 100" aria-hidden="true">
+    <rect x="10" y="38" width="80" height="54" rx="6" fill="${c.corps}"/>
+    <rect x="44" y="38" width="12" height="54" fill="${c.ruban}"/>
+    <g class="couvercle">
+      <rect x="6" y="26" width="88" height="16" rx="5" fill="${c.haut}"/>
+      <rect x="44" y="26" width="12" height="16" fill="${c.ruban}"/>
+      <ellipse cx="38" cy="19" rx="13" ry="8" fill="none" stroke="${c.ruban}" stroke-width="5"/>
+      <ellipse cx="62" cy="19" rx="13" ry="8" fill="none" stroke="${c.ruban}" stroke-width="5"/>
+      <circle cx="50" cy="22" r="5" fill="${c.ruban}"/>
+    </g>
+    <circle cx="50" cy="67" r="18" fill="#fff8e6" stroke="${c.ruban}" stroke-width="3"/>
+    <text x="50" y="68" text-anchor="middle" dominant-baseline="central" font-family="Fredoka,sans-serif" font-weight="700" font-size="${j > 9 ? 20 : 23}" fill="${c.corps}">${j}</text>
+    <text class="cadenas" x="84" y="40" text-anchor="middle" font-size="18">🔒</text>
+  </svg>`;
+}
+
+function dessiner() {
+  const ouverts = lire();
+  $("grille").innerHTML = "";
+  for (let j = 1; j <= 24; j++) {
+    const b = document.createElement("button");
+    b.type = "button";
+    const ok = disponible(j);
+    b.className = "case" + (ok ? "" : " ferme") + (ok && estAujourdhui(j) ? " aujourdhui" : "") + (ok && ouverts.includes(j) ? " ouvert" : "");
+    b.setAttribute("aria-label", "Cadeau du " + jourTexte(j) + (ok ? "" : " (pas encore ouvrable)"));
+    b.innerHTML = cadeau(j);
+    b.addEventListener("click", () => cliquer(j, b));
+    $("grille").appendChild(b);
+  }
+  $("bandeau").hidden = !test;
+}
+
+function cliquer(j, b) {
+  if (!disponible(j)) {
+    b.classList.remove("secoue"); void b.offsetWidth; b.classList.add("secoue");
+    info("Patience ! Ce cadeau s’ouvrira le " + jourTexte(j) + ".");
+    return;
+  }
+  if (!test) {
+    const o = lire();
+    if (!o.includes(j)) { o.push(j); ecrire(o); }
+    b.classList.add("ouvert");
+  }
+  pret.then(() => afficher(j));
+}
+
+const idYoutube = u => {
+  const m = String(u).match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/))([\w-]{11})/);
+  return m ? m[1] : null;
+};
+
+const nettoyer = t => { try { return encodeURI(decodeURI(t)); } catch (e) { return encodeURI(t); } };
+
+function afficher(j) {
+  const c = CONTENUS[j];
+  $("vueTitre").textContent = "Cadeau du " + jourTexte(j);
+  $("vueTexte").textContent = (c && c.texte) || "";
+  const zone = $("vueMedia");
+  zone.innerHTML = "";
+  const manque = () => { zone.innerHTML = '<p class="manque">Ce cadeau arrive très bientôt…</p>'; };
+  if (!c) { manque(); $("vue").showModal(); return; }
+  const f = c.fichier, yt = idYoutube(f);
+  if (yt) {
+    zone.innerHTML = '<div class="video16"><iframe src="https://www.youtube-nocookie.com/embed/' + yt + '?rel=0" title="Vidéo du ' + jourTexte(j) + '" allow="encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>';
+  } else {
+    /* un nom sans dossier est cherché à côté de la page, puis dans medias/ */
+    const sources = /^https?:\/\//i.test(f) ? [f] : [nettoyer(f)].concat(f.includes("/") ? [] : ["medias/" + nettoyer(f)]);
+    let essai = 0, el;
+    if (/\.(mp4|webm|mov|m4v)(\?|$)/i.test(f)) {
+      el = document.createElement("video");
+      el.controls = true; el.playsInline = true; el.preload = "metadata";
+    } else {
+      el = document.createElement("img");
+      el.alt = "Cadeau du " + jourTexte(j);
+    }
+    el.addEventListener("error", () => { essai++; if (essai < sources.length) el.src = sources[essai]; else manque(); });
+    el.src = sources[0];
+    zone.appendChild(el);
+  }
+  $("vue").showModal();
+}
+
+/* ====== FENÊTRES ====== */
+const vue = $("vue");
+const fermerVue = () => { vue.close(); $("vueMedia").innerHTML = ""; };
+$("fermer").addEventListener("click", fermerVue);
+vue.addEventListener("click", e => { if (e.target === vue) fermerVue(); });
+vue.addEventListener("close", () => { $("vueMedia").innerHTML = ""; });
+
+/* ====== MODE TEST ====== */
+function reglerTest(actif) {
+  test = actif;
+  try { sessionStorage.setItem("avent2026-test", actif ? "1" : "0"); } catch (e) {}
+  dessiner();
+}
+$("secret").addEventListener("click", () => {
+  if (test) { reglerTest(false); return; }
+  $("mdpChamp").value = ""; $("mdpErr").hidden = true;
+  $("mdp").showModal();
+  $("mdpChamp").focus();
+});
+$("quitterTest").addEventListener("click", () => reglerTest(false));
+$("mdpAnnuler").addEventListener("click", () => $("mdp").close());
+$("fmdp").addEventListener("submit", e => {
+  e.preventDefault();
+  if (btoa($("mdpChamp").value.trim()) === MDP_TEST) { $("mdp").close(); reglerTest(true); }
+  else { $("mdpErr").hidden = false; }
+});
+
+dessiner();
+pret.then(() => { if (erreurTxt) $("bandeauTxt").textContent = "Mode test : toutes les cases sont ouvertes. Attention : " + erreurTxt; });
+if (location.hash === "#test" && !test) $("secret").click();
+</script>
+</body>
+</html>
